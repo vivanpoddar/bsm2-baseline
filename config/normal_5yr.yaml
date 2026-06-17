@@ -1,0 +1,35 @@
+# Normal (fault-free, no-perturbation) 5-year dataset, closed-loop BSM2.
+# 5 independent synthetic-influent realizations via the Gernaey generator.
+#   python scripts/run_scenarios.py --config config/normal_5yr.yaml
+name: normal_5yr
+engine: bsm2_python           # ASM1+ADM1 (no phosphorus)
+variant: closed_loop          # BSM2CL: PID dissolved-oxygen control
+timestep_minutes: 1.0         # closed-loop requires <= 1 minute
+duration_days: 1825           # 5 years
+eval_days: 5
+do_setpoint: 2.0
+stabilize: true
+seed: 0
+
+influent:
+  mode: generate              # synthesize 5 years (default record is only ~609 d)
+  length_years: 5
+  n_realizations: 5
+  weather: {dry: 0.7, rain: 0.25, storm: 0.05}
+  holidays: true
+  seed: 0
+
+measurement:
+  mode: ideal                 # ground-truth (normal, fault-free)
+
+scenarios:
+  - baseline                  # empty event list -> no perturbations
+
+permit:
+  - {parameter: S_NH,    limit: 4.0,  window: monthly_avg}
+  - {parameter: TSS,     limit: 30.0, window: weekly_avg}
+  - {parameter: BOD5,    limit: 25.0, window: monthly_avg}
+  - {parameter: Total_N, limit: 18.0, window: annual_avg}
+
+output_dir: data
+export_format: parquet
