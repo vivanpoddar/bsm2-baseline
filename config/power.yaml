@@ -1,0 +1,14 @@
+# Plant power-use simulation (BSM2 energy management, BSM2OLEM).
+# Run with: python scripts/run_power.py --config config/power.yaml
+name: power
+engine: bsm2_python          # the energy model is the bsm2-python BSM2OLEM
+variant: open_loop           # BSM2OLEM has its own ammonia-based aeration controller
+timestep_minutes: 15.0
+duration_days: 120           # set null for the full ~609-day record
+eval_days: 14
+stabilize: true
+seed: 0
+influent:
+  mode: default
+output_dir: data
+export_format: parquet

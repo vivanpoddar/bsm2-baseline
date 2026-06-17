@@ -8,6 +8,7 @@ __pycache__/
 
 # Virtual environment
 .venv/
+.venv-qsdsan/
 venv/
 
 # Simulation outputs (regenerated from configs)

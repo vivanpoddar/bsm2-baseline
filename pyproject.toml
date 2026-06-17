@@ -24,6 +24,12 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.6",
 ]
+# Optional: full-phosphorus engine (mASM2d + ADM1p). Heavy stack; only needed for the
+# qsdsan_bsm2 engine / p_upset scenario. Coexists with bsm2-python under identical pins.
+qsdsan = [
+    "qsdsan>=1.5",
+    "exposan>=1.5",
+]
 
 [project.scripts]
 run-baseline = "bsm2_baseline.cli:main"

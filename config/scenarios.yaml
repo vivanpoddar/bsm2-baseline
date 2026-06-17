@@ -1,0 +1,44 @@
+# Multi-scenario synthetic data generation (compliance-risk presets).
+# Run with: python scripts/run_scenarios.py --config config/scenarios.yaml
+name: dataset
+engine: bsm2_python          # bsm2_python (no P) | qsdsan_bsm2 (full P; required for p_upset)
+variant: open_loop           # open_loop is faster; use closed_loop for DO-controlled runs
+timestep_minutes: 15.0
+duration_days: 120           # long enough to contain the preset event windows
+eval_days: 5
+stabilize: true
+seed: 0
+
+influent:
+  mode: default              # 'generate' once the synthetic influent generator is wired
+  n_realizations: 1
+
+# Scenarios to generate data for (each a named preset from scenarios.PRESETS).
+scenarios:
+  - baseline
+  - cold
+  - storm_overload
+  - toxic_shock
+  - poor_settling
+  # - p_upset                # requires engine: qsdsan_bsm2
+
+settler:
+  model: takacs
+  v0_max: 250.0
+  v0: 474.0
+  r_h: 5.76e-4
+  r_p: 2.86e-3
+  f_ns: 2.28e-3
+
+measurement:
+  mode: ideal                # 'realistic' once the Rieger sensor/actuator layer is wired
+
+permit:
+  - {parameter: S_NH,    limit: 4.0,  window: monthly_avg}
+  - {parameter: TSS,     limit: 30.0, window: weekly_avg}
+  - {parameter: BOD5,    limit: 25.0, window: monthly_avg}
+  - {parameter: Total_N, limit: 18.0, window: annual_avg}
+  # - {parameter: TP,    limit: 1.0,  window: monthly_avg}   # qsdsan_bsm2 only
+
+output_dir: data
+export_format: parquet

@@ -139,19 +139,117 @@ simulation code**.
 
 ---
 
+## Phase 2 — extensions for compliance-forecasting data
+
+Phase 2 turns the clean baseline into a **synthetic-data generator for compliance-risk
+scenarios**, while keeping phase-1 reproducible (engine `bsm2_python`, influent `default`,
+measurement `ideal`, no scenario → identical to phase-1).
+
+### Engine choice (config-selectable)
+
+`engine: bsm2_python` (ASM1 + ADM1; fast, validated; **no phosphorus**) or
+`engine: qsdsan_bsm2` (QSDsan/EXPOsan `bsm2P`: **mASM2d + ADM1p**, full phosphorus). Both
+stacks coexist in one environment (identical numpy/scipy pins). The QSDsan backend adds
+total phosphorus (TP, S_PO₄); see `ENGINE-DECISION.md` for the rationale.
+
+### Scenario library
+
+Named compliance-risk presets (`src/bsm2_baseline/scenarios.py`), each a set of
+time-windowed perturbation events that push the plant toward a specific permit failure:
+
+| Preset | Targets | Mechanism | Engine |
+|---|---|---|---|
+| `cold` | S_NH / Total_N | influent temperature drop → Arrhenius nitrifier slowdown | any |
+| `storm_overload` | TSS / BOD | influent flow surge → short HRT + settler washout | any |
+| `toxic_shock` | S_NH spike | nitrifier max-growth (μ_A) inhibition + recovery | any |
+| `poor_settling` | TSS | degraded Takács settling velocities | any |
+| `p_upset` | TP / PO₄ | phosphorus-removal upset | `qsdsan_bsm2` only |
+
+Generate data across scenarios:
+
+```bash
+python scripts/run_scenarios.py --config config/scenarios.yaml
+python scripts/run_scenarios.py --config config/scenarios.yaml --scenarios cold,poor_settling
+```
+
+### Measurement layer (the seam, now real)
+
+`measurement.mode: ideal` keeps identity passthrough (reproduces phase-1).
+`measurement.mode: realistic` applies the Rieger sensor-class models (noise, response
+dynamics, sampling cadence, range, detection limit, quantization) and actuator dynamics.
+The deferred **fault module** (bias/drift/freeze/dropout/actuator failure) plugs in at this
+exact seam with no core change.
+
+### Extended schema
+
+Influent/effluent tables now carry, alongside the ground-truth state columns:
+`meas_<var>` (sensor-observed) for compliance channels, a per-timestep `event` scenario
+label, and a `realization_id`. Phosphorus columns (`S_PO4`, `TP`) appear on the QSDsan
+engine. Native-resolution + daily/weekly/monthly aggregation are retained. `permit` limits
++ averaging windows are recorded in config and metadata.
+
+### Influent generator (item 1)
+
+`influent.mode: generate` synthesises arbitrary-length influent from the Gernaey
+phenomenological model — household + industry + seasonal-infiltration flow, a stochastic
+rain/storm engine, diurnal/weekly/seasonal pollutant loads, the exact ASM1 fractionation,
+and a seasonal temperature profile — using the published dimensionless profile tables
+(`influent/tables.py`) and parameters. `n_realizations` produces independent influent
+realizations (differing only by RNG seed). Validated against the published BSM2 influent
+characteristics (flow-weighted means within ~3%; Q within 0.2%; temperature 14.8 vs 14.86 °C).
+The detailed sewer/first-flush ODE routing is intentionally not reproduced (it reshapes
+storm transients, not long-run statistics) — see `influent/generator.py`.
+
+```python
+from bsm2_baseline.influent import generate
+inf = generate(length_days=365*5, seed=0, weather="rain", n_realizations=10)  # (10, N, 22)
+```
+
+### Plant power-use simulation (energy management)
+
+`scripts/run_power.py` runs the BSM2 energy-management benchmark (`BSM2OLEM`): aeration/
+pumping/mixing electricity demand, anaerobic-digester biogas feeding two CHP units + a
+boiler, dynamic electricity prices, and economics. It exports power/biogas/economics
+time-series (a well-digesting plant is a **net electricity exporter** via CHP).
+
+```bash
+python scripts/run_power.py --config config/power.yaml
+```
+
+### Status of the extensions
+
+| # | Extension | State |
+|---|---|---|
+| — | Engine as config (`bsm2_python` / `qsdsan_bsm2`) | ✅ config-selectable, both coexist in one env |
+| 1 | Influent generator (Gernaey) | ✅ `influent.mode: generate`, multi-realization, validated |
+| 2 | Sensor/actuator measurement layer (Rieger) | ✅ `ideal` reproduces phase-1, `realistic` live |
+| 3 | Phosphorus stack (QSDsan `bsm2P`) | ✅ `engines/qsdsan_bsm2.py`, TP/S_PO4 exported, P balance |
+| 4 | Temperature-dependent kinetics | ✅ engine Arrhenius; cold scenario raises effluent NH₃ 2.3→21.5 |
+| 5 | Settler behaviour for solids excursions | ✅ Takács params + `poor_settling` (TSS 15→2288) |
+| ★ | Plant power-use simulation (`BSM2OLEM`) | ✅ `scripts/run_power.py` — power/biogas/CHP/economics |
+| — | Fault framework (BSM-LT) | **deferred** — seam documented, not implemented |
+
 ## Layout
 
 ```
-config/                     example scenario configs (YAML)
+config/                     example scenario configs (baseline, smoke, scenarios, power, ...)
 src/bsm2_baseline/
-  config.py                 typed config + YAML loader
+  config.py                 typed config + YAML loader (engine, influent, scenarios, permit, ...)
   variables.py              the 21-component schema + derived/compliance variables
+  scenarios.py              compliance-risk scenario library + perturbation primitives
   interfaces.py             Sensor/Actuator protocols + identity passthrough (fault seam)
-  runner.py                 build + run a scenario, capture trajectories
+  runner.py                 build + run a scenario, capture true + measured trajectories
+  energy.py                 plant power-use simulation (BSM2OLEM energy management)
   export.py                 tidy datasets + aggregation + metadata
-  plots.py                  sanity plots
-  cli.py                    command-line entry point
-scripts/run_baseline.py     single entry point (config -> run -> export -> plot)
+  plots.py · cli.py
+  influent/                 synthetic influent generator (Gernaey): tables, params, generator
+  measurement/              Rieger sensor + actuator models (noise, dynamics, sampling)
+  engines/qsdsan_bsm2.py    QSDsan/EXPOsan bsm2P backend (phosphorus)
+scripts/
+  run_baseline.py           single baseline run (config -> run -> export -> plot)
+  run_scenarios.py          multi-scenario / multi-realization synthetic data generation
+  run_power.py              plant power-use (energy-management) simulation
+ENGINE-DECISION.md          phase-2 engine decision + rationale
 data/                       gitignored outputs
-tests/                      harness tests
+tests/                      harness tests (38)
 ```
