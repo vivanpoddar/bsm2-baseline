@@ -1,0 +1,14 @@
+[theme]
+base = "light"
+primaryColor = "#2f5d3a"            # Effluent forest green
+backgroundColor = "#faf9f5"          # warm near-white
+secondaryBackgroundColor = "#f0eee6"
+textColor = "#1c2620"
+font = "sans serif"
+
+[server]
+headless = true
+runOnSave = true
+
+[browser]
+gatherUsageStats = false

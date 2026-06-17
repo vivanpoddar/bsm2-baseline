@@ -205,6 +205,22 @@ from bsm2_baseline.influent import generate
 inf = generate(length_days=365*5, seed=0, weather="rain", n_realizations=10)  # (10, N, 22)
 ```
 
+### Interactive UI (Streamlit)
+
+A dashboard to run and explore simulations:
+
+```bash
+pip install -e ".[ui]"
+streamlit run ui/app.py
+```
+
+Three modes: **Run a scenario** (drive `bsm2_python`/`qsdsan_bsm2` live — pick scenario,
+control, sensors, duration; see effluent-compliance charts with scenario-event shading,
+permit-limit lines, and a true-vs-measured toggle), **Plant power use** (run `BSM2OLEM`;
+electricity/biogas/economics charts), and **Explore a dataset** (load any generated dataset
+under `data/` instantly). Large series (e.g. the 877k-row baseline) are downsampled for
+smooth in-browser rendering.
+
 ### Plant power-use simulation (energy management)
 
 `scripts/run_power.py` runs the BSM2 energy-management benchmark (`BSM2OLEM`): aeration/

@@ -30,6 +30,11 @@ qsdsan = [
     "qsdsan>=1.5",
     "exposan>=1.5",
 ]
+# Optional: interactive Streamlit dashboard (run / explore / power-use). `streamlit run ui/app.py`.
+ui = [
+    "streamlit>=1.40",
+    "plotly>=5.20",
+]
 
 [project.scripts]
 run-baseline = "bsm2_baseline.cli:main"
