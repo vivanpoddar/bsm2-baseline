@@ -37,7 +37,7 @@ ui = [
 ]
 
 [project.scripts]
-run-baseline = "bsm2_baseline.cli:main"
+bsm2 = "bsm2_baseline.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bsm2_baseline"]

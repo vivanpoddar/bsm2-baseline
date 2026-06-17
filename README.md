@@ -48,18 +48,20 @@ Dependencies are pinned in `requirements.txt` (`uv pip freeze`).
 
 ## Run
 
+Everything runs through one CLI, **`bsm2`** (full guide in [`USAGE.md`](USAGE.md)):
+
 ```bash
-# fast end-to-end smoke run (~14 simulated days)
-.venv/bin/python scripts/run_baseline.py --config config/smoke.yaml
-
-# full baseline (~609 simulated days, closed-loop) — long
-.venv/bin/python scripts/run_baseline.py --config config/baseline.yaml
-
-# open-loop variant
-.venv/bin/python scripts/run_baseline.py --config config/open_loop.yaml
+bsm2 list                                  # scenario presets + on-disk datasets
+bsm2 run --config config/smoke.yaml        # fast ~14-day smoke run
+bsm2 run --scenario cold --duration 120    # a scenario via flags
+bsm2 scenarios --config config/scenarios.yaml   # multi-scenario dataset + manifest
+bsm2 power --config config/power.yaml      # plant power-use (energy) model
+bsm2 inspect data/bulking_event            # summarise a dataset in the terminal
 ```
 
-Outputs land in `data/<scenario name>/` (gitignored).
+`run`/`scenarios`/`power` start from a YAML config and/or the defaults, then apply flag
+overrides. (`scripts/run_*.py` are thin wrappers around these subcommands.) Outputs land in
+`data/<name>/` (gitignored).
 
 ---
 
