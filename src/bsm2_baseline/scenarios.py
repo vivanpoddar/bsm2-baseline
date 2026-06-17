@@ -108,6 +108,12 @@ PRESETS: dict[str, list[ScenarioEvent]] = {
         ScenarioEvent(ScenarioType.STORM_OVERLOAD, start_day=90, duration_days=3, severity="hard"),
     ],
     "toxic_shock": [ScenarioEvent(ScenarioType.TOXIC_SHOCK, start_day=45, duration_days=2, severity="hard")],
+    # A classic, recoverable filamentous-bulking event: mild settling degradation over a
+    # short window — effluent TSS rises and then recovers once settling is restored.
+    "bulking": [
+        ScenarioEvent(ScenarioType.POOR_SETTLING, start_day=40, duration_days=10, severity="mild")
+    ],
+    # Severe / sustained poor settling -> total solids washout (biomass inventory lost).
     "poor_settling": [
         ScenarioEvent(ScenarioType.POOR_SETTLING, start_day=40, duration_days=20, severity="medium")
     ],

@@ -1,0 +1,40 @@
+# Sludge bulking event dataset.
+# Bulking = degraded (filamentous) settling -> sludge blanket rises -> solids wash out ->
+# effluent TSS spikes. Modelled by the `poor_settling` scenario (degraded Takacs settling
+# velocity over a window). We include `baseline` for contrast and turn on realistic sensors
+# so the dataset carries both the true effluent TSS and the operator-measured TSS.
+#
+# Run with: python scripts/run_scenarios.py --config config/bulking.yaml
+name: bulking
+engine: bsm2_python
+variant: open_loop          # bulking is a settling phenomenon, independent of DO control
+timestep_minutes: 15.0
+duration_days: 90           # baseline (0-40) -> bulking (40-60) -> recovery (60-90)
+eval_days: 5
+stabilize: true
+seed: 0
+
+influent:
+  mode: default
+
+scenarios:
+  - baseline
+  - poor_settling           # the bulking event (degraded settling, days 40-60)
+
+measurement:
+  mode: realistic           # effluent TSS sensor (range 0-200) saturates during washout
+
+settler:
+  model: takacs
+  v0_max: 250.0
+  v0: 474.0
+  r_h: 5.76e-4
+  r_p: 2.86e-3
+  f_ns: 2.28e-3
+
+permit:
+  - {parameter: TSS,  limit: 30.0, window: weekly_avg}
+  - {parameter: S_NH, limit: 4.0,  window: monthly_avg}
+
+output_dir: data
+export_format: parquet
