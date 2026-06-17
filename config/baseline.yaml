@@ -1,0 +1,12 @@
+# Baseline scenario: ideal, fault-free, closed-loop BSM2 over the full ~609-day record.
+name: baseline
+variant: closed_loop          # BSM2CL: PID dissolved-oxygen control on reactor 4
+influent: default             # package standard 609-day dynamic influent
+timestep_minutes: 1.0         # closed-loop requires <= 1 minute
+duration_days: null           # null -> full influent record (~609 days)
+eval_days: 5                  # benchmark indices averaged over the last 5 days
+do_setpoint: 2.0              # dissolved-oxygen setpoint [g(O2)/m3]
+stabilize: true               # run to steady state before the timed simulation
+seed: 0                       # inert at the ideal baseline; wired for the future fault layer
+output_dir: data
+export_format: parquet

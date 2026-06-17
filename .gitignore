@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Simulation outputs (regenerated from configs)
+data/
+*.parquet
+*.png
+
+# OS
+.DS_Store
+
+# Vendored upstream repo used only for running its test suite
+vendor/

@@ -1,0 +1,13 @@
+# Open-loop variant: fixed KLa, no dissolved-oxygen control (BSM2OL).
+# Open-loop tolerates a coarser timestep; 15 minutes matches the package reference.
+name: open_loop
+variant: open_loop
+influent: default
+timestep_minutes: 15.0
+duration_days: null
+eval_days: 5
+do_setpoint: 2.0              # ignored for the open-loop variant
+stabilize: true
+seed: 0
+output_dir: data
+export_format: parquet

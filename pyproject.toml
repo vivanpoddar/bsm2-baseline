@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bsm2-baseline"
+version = "0.1.0"
+description = "Thin, configurable harness for generating ideal, fault-free BSM2 baseline simulation datasets."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "MIT" }
+dependencies = [
+    "bsm2-python==0.0.16",
+    "numpy>=2.0",
+    "pandas>=2.0",
+    "pyarrow>=15.0",
+    "matplotlib>=3.8",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+run-baseline = "bsm2_baseline.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bsm2_baseline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ARG"]

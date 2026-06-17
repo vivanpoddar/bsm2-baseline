@@ -1,0 +1,12 @@
+# Smoke scenario: short closed-loop run for fast end-to-end validation.
+name: smoke
+variant: closed_loop
+influent: default
+timestep_minutes: 1.0
+duration_days: 14             # a couple of weeks: fast, exercises the full pipeline
+eval_days: 5
+do_setpoint: 2.0
+stabilize: true
+seed: 0
+output_dir: data
+export_format: parquet
