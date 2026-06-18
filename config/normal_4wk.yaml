@@ -1,0 +1,34 @@
+# Normal (fault-free, no-perturbation) 4-WEEK dataset, closed-loop BSM2.
+# Same as normal_5yr.yaml but duration_days: 28 (4 weeks). CSV output.
+name: normal_4wk
+engine: bsm2_python           # ASM1+ADM1 (no phosphorus)
+variant: closed_loop          # BSM2CL: PID dissolved-oxygen control
+timestep_minutes: 1.0         # closed-loop requires <= 1 minute
+duration_days: 28             # 4 weeks
+eval_days: 5
+do_setpoint: 2.0
+stabilize: true
+seed: 0
+
+influent:
+  mode: generate              # synthesize 28 days via the Gernaey generator
+  length_years: 5             # ignored when duration_days is set (gen length follows duration)
+  n_realizations: 5
+  weather: {dry: 0.7, rain: 0.25, storm: 0.05}
+  holidays: true
+  seed: 0
+
+measurement:
+  mode: ideal                 # ground-truth (normal, fault-free)
+
+scenarios:
+  - baseline                  # empty event list -> no perturbations
+
+permit:
+  - {parameter: S_NH,    limit: 4.0,  window: monthly_avg}
+  - {parameter: TSS,     limit: 30.0, window: weekly_avg}
+  - {parameter: BOD5,    limit: 25.0, window: monthly_avg}
+  - {parameter: Total_N, limit: 18.0, window: annual_avg}
+
+output_dir: data
+export_format: csv
